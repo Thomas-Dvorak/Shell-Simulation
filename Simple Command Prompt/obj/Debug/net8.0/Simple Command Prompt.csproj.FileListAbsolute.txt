@@ -1,0 +1,14 @@
+C:\Users\Thomas Dvorak\Documents\Simple Command Prompt\obj\Debug\net8.0\Simple Command Prompt.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Thomas Dvorak\Documents\Simple Command Prompt\obj\Debug\net8.0\Simple Command Prompt.AssemblyInfoInputs.cache
+C:\Users\Thomas Dvorak\Documents\Simple Command Prompt\obj\Debug\net8.0\Simple Command Prompt.AssemblyInfo.cs
+C:\Users\Thomas Dvorak\Documents\Simple Command Prompt\obj\Debug\net8.0\Simple Command Prompt.csproj.CoreCompileInputs.cache
+C:\Users\Thomas Dvorak\Documents\Simple Command Prompt\bin\Debug\net8.0\Simple Command Prompt.exe
+C:\Users\Thomas Dvorak\Documents\Simple Command Prompt\bin\Debug\net8.0\Simple Command Prompt.deps.json
+C:\Users\Thomas Dvorak\Documents\Simple Command Prompt\bin\Debug\net8.0\Simple Command Prompt.runtimeconfig.json
+C:\Users\Thomas Dvorak\Documents\Simple Command Prompt\bin\Debug\net8.0\Simple Command Prompt.dll
+C:\Users\Thomas Dvorak\Documents\Simple Command Prompt\bin\Debug\net8.0\Simple Command Prompt.pdb
+C:\Users\Thomas Dvorak\Documents\Simple Command Prompt\obj\Debug\net8.0\Simple Command Prompt.dll
+C:\Users\Thomas Dvorak\Documents\Simple Command Prompt\obj\Debug\net8.0\refint\Simple Command Prompt.dll
+C:\Users\Thomas Dvorak\Documents\Simple Command Prompt\obj\Debug\net8.0\Simple Command Prompt.pdb
+C:\Users\Thomas Dvorak\Documents\Simple Command Prompt\obj\Debug\net8.0\Simple Command Prompt.genruntimeconfig.cache
+C:\Users\Thomas Dvorak\Documents\Simple Command Prompt\obj\Debug\net8.0\ref\Simple Command Prompt.dll
