@@ -1,15 +1,12 @@
-using System.Diagnostics.Tracing;
-using System.Security.Cryptography;
-
 public class SimpleConsole {
     private readonly string Version = "1.8.2";
     private readonly string ConsoleName = "Devo Command Line";
-    private readonly List<string> UserInputHistory = new();
     private string UserInput = "default_text";
     private string[] UserCommand;
     private string[] RawUserCommand;
     private string CurrentDirectory = "src";
-    private string RootDirectory = "src";
+    private readonly string RootDirectory = "src";
+    private readonly string BaseDirectory = AppDomain.CurrentDomain.BaseDirectory.Remove(AppDomain.CurrentDomain.BaseDirectory.IndexOf("\\bin\\Debug\\net8.0"));
     private readonly Random RNG = new();
 
     public void Main() {
@@ -17,8 +14,9 @@ public class SimpleConsole {
         while (!UserInput.Equals("exit", StringComparison.CurrentCultureIgnoreCase)) {
             Console.Write($"{CurrentDirectory}> ");
             UserInput = Console.ReadLine();
-            UserInputHistory.Add(UserInput);
             RawUserCommand = UserInput.Split(" ");
+            // raw user command is not changed to lowercase for printing messages such as echo
+            // user command is lowercase for cd, echo, mkfile so that the command reads properly
             UserInput = UserInput.ToLower();
             UserCommand = UserInput.Split(" ");
             if (UserCommand[0].Equals("echo", StringComparison.CurrentCultureIgnoreCase)) {
@@ -37,6 +35,7 @@ public class SimpleConsole {
             } else if (UserCommand[0].Equals("cd", StringComparison.CurrentCultureIgnoreCase)) {
                 // cd <dir>
                 // cd ../
+                // FIXME: Not case sensitive
                 ChangeDirectory();
             } else if (UserCommand[0].Equals("rmfile", StringComparison.CurrentCultureIgnoreCase)) {
                 // rmfile <filename.extension>
@@ -47,8 +46,13 @@ public class SimpleConsole {
             } else if (UserCommand.Length == 2 && UserCommand[0].Equals("rmfolder", StringComparison.CurrentCultureIgnoreCase)) {
                 // rmfolder <foldername>
                 RemoveFolder();
-            } else if (UserCommand.Length == 2 && UserCommand[0].Equals("ls", StringComparison.CurrentCultureIgnoreCase)) {
+            } else if (UserCommand[0].Equals("ls", StringComparison.CurrentCultureIgnoreCase)) {
+                // ls [-i or -o]
                 ListContentsOfCurrentDirectory();
+            } else if (UserCommand[0].Equals("copyto", StringComparison.CurrentCultureIgnoreCase)) {
+                // copyto <file> <directory>
+                // so, we must validate the file exists in the current directory and that the directory exists
+                CopyFileToDestination();
             } else {
                 if (!UserCommand[0].Equals("exit", StringComparison.CurrentCultureIgnoreCase)) {
                     Console.WriteLine($"Unknown command {UserCommand[0]}");
@@ -62,20 +66,20 @@ public class SimpleConsole {
         Console.WriteLine("Command List:");
         Console.WriteLine("==================================");
         Console.WriteLine("1. cd <directory> | Goes to the <directory> specified.");
-        Console.WriteLine("2. echo <message> -r <repeat_times> | Prints <message> <repeat_times> times. Can leave out -r and <repeat_times> for a one-time print of <message>.");
-        Console.WriteLine("3. help | Displays this help menu.");
-        Console.WriteLine("4. ls [-i or -o] | Lists all the files and directories in the current directory. -i shows only files, -o shows only folders. NEEDS TO BE IMPLEMENTED");
-        Console.WriteLine("5. mkfile <filename.extension> | Creates a file with name <filename> and extension <extension> in the current directory.");
-        Console.WriteLine("6. rmfile <filename.extension> | Deletes a file with name <filename> and extension <extension> in the current directory.");
-        Console.WriteLine("7. mkfolder <foldername> | Creates a folder with name <foldername>.");
-        Console.WriteLine("8. rmfolder <foldername> | Deletes a folder with name <foldername> AND ALL ITS CONTENTS RECURSIVELY.");
+        Console.WriteLine("2. copyto <filename> <destination> | Copies <filename> to <destination>.");
+        Console.WriteLine("3. echo <message> -r <repeat_times> | Prints <message> <repeat_times> times. Can leave out -r and <repeat_times> for a one-time print of <message>.");
+        Console.WriteLine("4. help | Displays this help menu.");
+        Console.WriteLine("5. ls [-i or -o] | Lists all the files and directories in the current directory. -i shows only files, -o shows only folders.");
+        Console.WriteLine("6. mkfile <filename.extension> | Creates a file with name <filename> and extension <extension> in the current directory.");
+        Console.WriteLine("7. rmfile <filename.extension> | Deletes a file with name <filename> and extension <extension> in the current directory.");
+        Console.WriteLine("8. mkfolder <foldername> | Creates a folder with name <foldername>.");
+        Console.WriteLine("9. rmfolder <foldername> | Deletes a folder with name <foldername> AND ALL ITS CONTENTS RECURSIVELY.");
         Console.WriteLine("==================================");
     }
     private void ChangeDirectory() {
         if (!UserCommand[1].Contains("../") && UserCommand.Length == 2) {
-            string BaseDir = AppDomain.CurrentDomain.BaseDirectory;
             // is Path.Exists(path) not case sensitive?
-            if (Path.Exists(BaseDir.Remove(BaseDir.IndexOf("\\bin\\Debug\\net8.0\\")) + $"\\{CurrentDirectory}\\{RawUserCommand[1]}")) {
+            if (Path.Exists(BaseDirectory + $"\\{CurrentDirectory}\\{RawUserCommand[1]}")) {
                 CurrentDirectory = $"{CurrentDirectory}\\{RawUserCommand[1]}";
             } else {
                 Console.WriteLine("Invalid use of cd. Path may not exist.");
@@ -113,7 +117,33 @@ public class SimpleConsole {
         }
     }
     private void ListContentsOfCurrentDirectory() {
-
+        string Path = BaseDirectory + $"\\{CurrentDirectory}";
+        if (UserCommand.Length == 1) {
+            string[] Folders = Directory.GetDirectories(Path);
+            string[] Files = Directory.GetFiles(Path);
+            Console.WriteLine("FOLDERS:");
+            for (int i = 0; i < Folders.Length; i++) {
+                Console.WriteLine(Folders[i].Substring(Path.Length - CurrentDirectory.Length));
+            }
+            Console.WriteLine("FILES:");
+            for (int i = 0; i < Files.Length; i++) {
+                Console.WriteLine(Files[i].Substring(Path.Length - CurrentDirectory.Length));
+            }
+        } else if (UserCommand.Length == 2 && UserCommand[1].Equals("-i", StringComparison.CurrentCultureIgnoreCase)) {
+            string[] Files = Directory.GetFiles(Path);
+            Console.WriteLine("FILES:");
+            for (int i = 0; i < Files.Length; i++) {
+                Console.WriteLine(Files[i].Substring(Path.Length - CurrentDirectory.Length));
+            }
+        } else if (UserCommand.Length == 2 && UserCommand[1].Equals("-o", StringComparison.CurrentCultureIgnoreCase)) {
+            string[] Folders =  Directory.GetDirectories(Path);
+            Console.WriteLine("FOLDERS:");
+            for (int i = 0; i < Folders.Length; i++) {
+                Console.WriteLine(Folders[i].Substring(Path.Length - CurrentDirectory.Length));
+            }
+        } else {
+            Console.WriteLine("Invalid use of ls.");
+        }
     }
     private void CreateNewFile(string FileNameAndExtension) {
         // split the file's info into the name and extension
@@ -127,19 +157,17 @@ public class SimpleConsole {
         } else {
             // get the base directory on anyone's computer
             // make a new file in the user's current directory
-            string BaseDir = AppDomain.CurrentDomain.BaseDirectory;
-            FileStream NewFile = File.Create(BaseDir.Remove(BaseDir.IndexOf("\\bin\\Debug\\net8.0\\")) + $"\\{CurrentDirectory}\\{NewFileInfo[0]}.{NewFileInfo[1]}");
+            FileStream NewFile = File.Create(BaseDirectory + $"\\{CurrentDirectory}\\{NewFileInfo[0]}.{NewFileInfo[1]}");
             NewFile.Close();
             Console.WriteLine("File created successfully.");
         }
     }
     private void RemoveFile() {
         // get the base directory
-        string BaseDir = AppDomain.CurrentDomain.BaseDirectory;
-        if (UserCommand.Length == 2 && Path.Exists(BaseDir.Remove(BaseDir.IndexOf("\\bin\\Debug\\net8.0\\")) + $"\\{CurrentDirectory}\\{RawUserCommand[1]}")) {
+        if (UserCommand.Length == 2 && Path.Exists(BaseDirectory + $"\\{CurrentDirectory}\\{RawUserCommand[1]}")) {
             try {
                 // try deleting it if it exists
-                File.Delete(BaseDir.Remove(BaseDir.IndexOf("\\bin\\Debug\\net8.0\\")) + $"\\{CurrentDirectory}\\{RawUserCommand[1]}");
+                File.Delete(BaseDirectory + $"\\{CurrentDirectory}\\{RawUserCommand[1]}");
                 Console.WriteLine("File successfully deleted.");
             } catch (Exception e) {
                 // there was a problem deleting the file
@@ -152,8 +180,7 @@ public class SimpleConsole {
     }
     private void CreateFolder() {
         try {
-            string BaseDir = AppDomain.CurrentDomain.BaseDirectory;
-            Directory.CreateDirectory(BaseDir.Remove(BaseDir.IndexOf("\\bin\\Debug\\net8.0\\")) + $"\\{CurrentDirectory}\\{RawUserCommand[1]}");
+            Directory.CreateDirectory(BaseDirectory + $"\\{CurrentDirectory}\\{RawUserCommand[1]}");
             Console.WriteLine("Folder created successfully.");
         } catch (Exception e) {
             Console.WriteLine("Error in creating folder. Path may not exist, or other directories may be invalid. ");
@@ -162,12 +189,36 @@ public class SimpleConsole {
     }
     private void RemoveFolder() {
         try {
-            string BaseDir = AppDomain.CurrentDomain.BaseDirectory;
-            Directory.Delete(BaseDir.Remove(BaseDir.IndexOf("\\bin\\Debug\\net8.0\\")) + $"\\{CurrentDirectory}\\{RawUserCommand[1]}", true);
+            Directory.Delete(BaseDirectory + $"\\{CurrentDirectory}\\{RawUserCommand[1]}", true);
             Console.WriteLine("Folder deleted successfully.");
         } catch (Exception e) {
             Console.WriteLine("Error in deleting folder. Path may not exist, or other directories may be invalid. ");
             Console.WriteLine(e.Message);
+        }
+    }
+    private void CopyFileToDestination() {
+        string CurrentFile = BaseDirectory + $"\\{CurrentDirectory}\\{RawUserCommand[1]}";
+        string Destination = BaseDirectory + $"\\{RawUserCommand[2]}";
+        if (UserCommand.Length == 3) {
+            if (Path.Exists(CurrentFile)) {
+                // validate the file
+                if (Path.Exists(Destination)) {
+                    // validate the folder it's going to
+                    try {
+                        File.Copy(CurrentFile, Destination + $"\\{RawUserCommand[1]}");
+                        Console.WriteLine("File successfully copied to destination!");
+                    } catch (Exception e) {
+                        Console.WriteLine("Error in copying file. File and directory are valid, but there was an error in copying the contents.");
+                        Console.WriteLine(e.Message);
+                    }
+                } else {
+                    Console.WriteLine("Directory does not exist.");
+                }
+            } else {
+                Console.WriteLine("File does not exist.");
+            }
+        } else {
+            Console.WriteLine("Invalid use of copyto.");
         }
     }
 }
