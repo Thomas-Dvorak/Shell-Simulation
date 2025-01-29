@@ -6,6 +6,7 @@ The purpose/motivation of this project is to gain a basic understanding of how m
 It is also to gain experience with using both GitHub and C# with .NET.
 
 The project provides a root directory `src` where users can enter 8 different commands:
+
 -`echo <message> -r <repeat-times>` - Prints `<message>` once if `-r` is not specified and if so, prints `<message>` `<repeat-times>` times. If `-r` is specified and `<repeat-times>` is not, then it prints `<message>` anywhere from 1 to 1000 times. 
 
 -`mkfile <filename.extension>` - Creates a file with `<filename` name and extention `.extension>` in the current directory. If there is no extension or filename specified, it does not work. 
